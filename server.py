@@ -1,6 +1,6 @@
 import socket
 import sys
-
+from _thread import *
 HOST = ''  # Symbolic name meaning all available interfaces
 PORT = 2163  # Arbitrary non-privileged port
 
@@ -18,15 +18,26 @@ print('Socket bind complete')
 s.listen(10)
 print('Socket now listening')
 
-# wait to accept connection
-conn, addr = s.accept()
-
-# display client information
-print('Connected with ' + addr[0] + ':' + str(addr[1]))
 
 # keep talking with client
-data = conn.recv(1024)
-conn.sendall(data)
 
-conn.close()
+def clientthread(conn):
+    conn.send('Welcome to the server. Type something and hit enter\n'.encode())
+    while True:
+        data = conn.recv(1024)
+        reply = '\n OK...'.encode() + data + '\n'.encode()
+        if not data:
+            break
+        conn.sendall(reply)
+    conn.close()
+
+
+while 1:
+    # wait to accept connection and display client information
+    conn, addr = s.accept()
+    print('Connected with ' + addr[0] + ':' + str(addr[1]))
+    # start new thread takes 1st argument as a function name to be run
+    # second is the tuple of arguments to the function.
+    start_new_thread(clientthread, (conn,))
+
 s.close()
