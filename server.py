@@ -23,12 +23,21 @@ print('Socket now listening')
 
 def clientthread(conn):
     conn.send('Welcome to the server. Type something and hit enter\n'.encode())
+    reply = "".encode()
     while True:
         data = conn.recv(1024)
-        reply = '\n OK...'.encode() + data + '\n'.encode()
+        if "\n".encode() in data:
+            if '!q'.encode() == reply.strip():
+                break
+            print(reply[:9])
+            if reply[:9] == '!sendall '.encode():
+                reply = 'OK... '.encode() + reply[9:] + '\n'.encode()
+                conn.sendall(reply)
+            reply = "".encode()
+        else:
+            reply += data
         if not data:
             break
-        conn.sendall(reply)
     conn.close()
 
 
@@ -41,3 +50,4 @@ while 1:
     start_new_thread(clientthread, (conn,))
 
 s.close()
+
