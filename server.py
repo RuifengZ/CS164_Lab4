@@ -1,6 +1,7 @@
 import socket
 import sys
 from _thread import *
+
 HOST = ''  # Symbolic name meaning all available interfaces
 PORT = 2163  # Arbitrary non-privileged port
 
@@ -28,11 +29,13 @@ def clientthread(conn):
         data = conn.recv(1024)
         if "\n".encode() in data:
             if '!q'.encode() == reply.strip():
+                connections.remove(conn)
                 break
             print(reply[:9])
             if reply[:9] == '!sendall '.encode():
                 reply = 'OK... '.encode() + reply[9:] + '\n'.encode()
-                conn.sendall(reply)
+                for c in connections:
+                    c.sendall(reply)
             reply = "".encode()
         else:
             reply += data
@@ -41,13 +44,15 @@ def clientthread(conn):
     conn.close()
 
 
+# list of all connections
+connections = []
 while 1:
     # wait to accept connection and display client information
     conn, addr = s.accept()
     print('Connected with ' + addr[0] + ':' + str(addr[1]))
+    connections.append(conn)
     # start new thread takes 1st argument as a function name to be run
     # second is the tuple of arguments to the function.
     start_new_thread(clientthread, (conn,))
 
 s.close()
-
