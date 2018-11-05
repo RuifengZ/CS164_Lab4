@@ -1,2 +1,2 @@
-# CS164_Lab4
+# TCP Python
 Setting up a server and client with Python
